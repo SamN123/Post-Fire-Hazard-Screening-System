@@ -1,10 +1,10 @@
-# Post-Fire Erosion Hotspot Screening System
+# Post Fire Hazard Hotspot Screening System
 
 **Senior Design Project | Python, GIS, Remote Sensing**
 
-A Python-based geographic information system (GIS) pipeline for screening potential post-fire erosion hotspots. The system combines **Monitoring Trends in Burn Severity (MTBS)** burn-severity classifications with **USGS elevation data** to identify locations where high burn severity and steep terrain overlap.
+A Python-based geographic information system (GIS) pipeline for screening potential post fire hazard hotspots. The system combines **Monitoring Trends in Burn Severity (MTBS)** burn-severity classifications with **USGS elevation data** to identify locations where high burn severity and steep terrain overlap.
 
-> **Project status:** The reusable GIS analysis pipeline is implemented and has processed six wildfire datasets. Database storage, a graphical user interface (GUI), and full application integration are planned next. The outputs are *screening indicators*, not independently validated predictions of erosion.
+> **Project status:** The reusable GIS analysis pipeline is implemented and has processed six wildfire datasets. Database storage, a graphical user interface (GUI), and full application integration are planned next. 
 
 ## Project objectives
 
@@ -36,7 +36,7 @@ A Python-based geographic information system (GIS) pipeline for screening potent
 6. **Classify potential hotspots.** Mark pixels meeting **both** conditions:
    - MTBS burn-severity class **3 or 4**; and
    - terrain slope **at least 23°**.
-7. **Summarize and visualize.** Calculate hotspot acreage, percent coverage, slope statistics, and eight-connected hotspot clusters. Save raster outputs and PNG maps.
+7. **Summarize and visualize.** Calculate hotspot acreage, percent coverage, slope statistics. Save raster outputs and PNG maps.
 
 The smoothed hotspot overlay is **for map presentation only**. The underlying hotspot classification raster and statistics are calculated without that smoothing.
 
@@ -58,7 +58,7 @@ The three maps below illustrate how the terrain and burn-severity inputs relate 
 
 For Stagecoach, the pipeline identified **7,362 hotspot pixels**, covering approximately **1,637.27 acres**, or **21.24%** of the analyzed area.
 
-## Six-wildfire test results
+## Six wildfire test results
 
 | Wildfire | Analyzed area (acres) | Potential hotspot area (acres) | Hotspot coverage | Hotspot clusters |
 |---|---:|---:|---:|---:|
@@ -69,7 +69,7 @@ For Stagecoach, the pipeline identified **7,362 hotspot pixels**, covering appro
 | Peak (2021) | 2,315.35 | 271.77 | 11.74% | 130 |
 | Stagecoach (2020) | 7,709.09 | 1,637.27 | 21.24% | 485 |
 
-All six datasets completed processing through the reusable pipeline. For the Garden dataset, the refactored hotspot and aligned slope rasters were also compared against the earlier pipeline outputs and matched pixel-for-pixel. These checks demonstrate computational consistency and successful execution; **they do not establish predictive accuracy against observed erosion**.
+All six datasets completed processing through the reusable pipeline. For the Garden dataset, the refactored hotspot and aligned slope rasters were also compared against the earlier pipeline outputs and matched pixel for pixel. These checks demonstrate computational consistency and successful execution.
 
 ## Repository layout
 
@@ -83,14 +83,14 @@ All six datasets completed processing through the reusable pipeline. For the Gar
 │       ├── stagecoach_slope.png
 │       ├── stagecoach_burn_severity.png
 │       └── stagecoach_hotspots.png
-├── Elevation/             # Local USGS DEM (not tracked in Git)
-├── Wildfires/             # Six local MTBS datasets (not tracked in Git)
+├── Elevation/             # Local USGS DEM 
+├── Wildfires/             # Six local MTBS datasets 
 ├── Results/
-│   ├── RawResults/        # Original Garden analysis outputs (not tracked)
-│   └── RefactorTest/      # Reusable pipeline outputs (not tracked)
+│   ├── RawResults/        # Original Garden analysis outputs 
+│   └── RefactorTest/      # Reusable pipeline outputs 
 └── src/
     ├── pipeline.py       # Earlier incremental development pipeline
-    └── pipeline_select.py # Reusable command-line pipeline
+    └── pipeline_select.py # Reusable command line pipeline
 ```
 
 The `Elevation/`, `Wildfires/`, and `Results/` directories are excluded from Git because the source datasets and generated rasters can be large. Only selected example PNG maps are committed under `docs/images/`.
@@ -100,7 +100,7 @@ The `Elevation/`, `Wildfires/`, and `Results/` directories are excluded from Git
 ### Requirements
 
 - Python 3 with the packages listed in `requirements.txt`.
-- MTBS six-class burn-severity raster files (`*dnbr6.tif`) organized under `Wildfires/`.
+- MTBS six class burn severity raster files (`*dnbr6.tif`) organized under `Wildfires/`.
 - One compatible USGS DEM GeoTIFF under `Elevation/` that covers the selected wildfire.
 
 Install the Python packages from the repository root:
@@ -125,7 +125,6 @@ Select a wildfire from the numbered list and enter its display name when prompte
 - `burn_severity_map.png`
 - `hotspot_map_smooth.png`
 
-**Note:** The current command-line workflow expects exactly one TIFF in `Elevation/`. Re-running an analysis for the same MTBS dataset writes to its existing output directory.
 
 ## Development roadmap
 
@@ -138,12 +137,10 @@ Select a wildfire from the numbered list and enter its display name when prompte
 | 5. GUI | Select a wildfire, run analysis, and view maps/statistics | Planned: November 9–15, 2026 |
 | 6. Integration and testing | Connect GUI, pipeline, and MySQL; test persistence and retrieval | Planned: November 16–22, 2026 |
 
-Dates are development targets, not completed milestones. The database schema will be finalized before implementation; the earlier proposed `Client`, `Wildfire`, `Analysis`, and `Raster_File` entities remain subject to review.
 
 ## Limitations and future work
 
-- The current rule combines burn severity and slope; it does **not** account for rainfall, soil properties, vegetation recovery, or measured erosion.
-- A flagged hotspot is an area meeting screening criteria, **not a measured erosion event**.
+- The current rule combines burn severity and slope. Other variables may be added to expand targeted features. 
 - The current input workflow assumes one DEM covers the selected wildfire.
 - Independent validation against observed erosion and additional environmental factors are possible future extensions.
 - The GUI and MySQL integration are not yet implemented.
