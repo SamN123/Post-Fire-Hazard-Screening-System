@@ -1,0 +1,20 @@
+# Original GIS datasets
+/Elevation/
+/Wildfires/
+
+# Generated analysis outputs
+/Results/
+
+# Python environments and cache
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Credentials
+.env
+.env.*
+!.env.example
+
+# VS Code local settings
+.vscode/
