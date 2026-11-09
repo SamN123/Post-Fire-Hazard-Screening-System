@@ -639,109 +639,118 @@ results_dir.mkdir(exist_ok=True)
 # STEP 13: Generate Smoothed Hotspot Map
 # ==================================================
 
-# ==================================================
-# STEP 13: Generate Smoothed Hotspot Map
-# ==================================================
+def generate_smoothed_hotspot_map(hotspot_file, slope_file, map_file, wildfire_name):
+    """Create a hotspot visualization from aligned hotspot and slope rasters."""
+    hotspot_file = Path(hotspot_file)
+    slope_file = Path(slope_file)
+    map_file = Path(map_file)
+    map_file.parent.mkdir(parents=True, exist_ok=True)
 
-hotspot_file = results_dir / "garden_hotspots.tif"
-slope_file = results_dir / "garden_slope_30m.tif"
-map_file = results_dir / "garden_hotspot_map_smooth.png"
+    with rasterio.open(hotspot_file) as src, rasterio.open(slope_file) as terrain:
 
-with rasterio.open(hotspot_file) as src, rasterio.open(slope_file) as terrain:
+        # Check that both rasters use the same geographic grid
+        assert src.crs == terrain.crs
+        assert src.transform.almost_equals(terrain.transform)
+        assert src.shape == terrain.shape
 
-    # Check that both rasters use the same geographic grid
-    assert src.crs == terrain.crs
-    assert src.transform.almost_equals(terrain.transform)
-    assert src.shape == terrain.shape
+        hotspot_data = src.read(1)
+        slope = terrain.read(1, masked=True)
 
-    hotspot_data = src.read(1)
-    slope = terrain.read(1, masked=True)
+        # Identify hotspot pixels
+        hotspot_mask = hotspot_data == 1
 
-    # Identify hotspot pixels
-    hotspot_mask = hotspot_data == 1
+        # Group neighboring hotspot pixels into connected regions
+        clusters, cluster_count = label(
+            hotspot_mask,
+            structure=np.ones((3, 3))
+        )
 
-    # Group neighboring hotspot pixels into connected regions
-    clusters, cluster_count = label(
-        hotspot_mask,
-        structure=np.ones((3, 3))
+        # Smooth hotspot boundaries for visualization only
+        smooth_mask = gaussian_filter(
+            hotspot_mask.astype(float),
+            sigma=1.0
+        )
+
+        # Get geographic boundaries
+        bounds = src.bounds
+        extent = [bounds.left, bounds.right, bounds.bottom, bounds.top]
+
+       # Distinct terrain colors that contrast with red hotspots
+        terrain_colors = [
+        "#2166AC",  # 0°: Deep blue
+        "#67A9CF",  # Gentle slopes: light blue
+        "#1A9850",  # Moderate slopes: green
+        "#A6D96A",  # Steeper slopes: light green
+        "#FEE08B"   # Very steep slopes: golden yellow
+    ]
+
+        terrain_cmap = LinearSegmentedColormap.from_list(
+        "terrain_contrast",
+        terrain_colors
     )
 
-    # Smooth hotspot boundaries for visualization only
-    smooth_mask = gaussian_filter(
-        hotspot_mask.astype(float),
-        sigma=1.0
+        plt.figure(figsize=(10, 8))
+
+        # Display terrain slope using muted earth tones
+        plt.imshow(
+            slope,
+            cmap=terrain_cmap,
+            extent=extent,
+            origin="upper",
+            vmin=0,
+            vmax=65
+        )
+
+        plt.colorbar(label="Slope (degrees)")
+
+        # Draw smoothed hotspot regions in red
+        plt.contourf(
+            smooth_mask,
+            levels=[0.25, 1.0],
+            colors=["red"],
+            alpha=0.65,
+            extent=extent,
+            origin="upper"
+        )
+
+        # Add darker outlines around hotspot regions
+        plt.contour(
+            smooth_mask,
+            levels=[0.25],
+            colors=["darkred"],
+            linewidths=0.8,
+            extent=extent,
+            origin="upper"
+        )
+
+        # Add legend
+        plt.legend(
+            handles=[Patch(color="red", label="Hotspot Region")],
+            loc="upper right"
+        )
+
+        plt.title(f"{wildfire_name} - Potential Erosion Hotspots")
+        plt.xlabel("UTM Easting (meters)")
+        plt.ylabel("UTM Northing (meters)")
+
+        plt.tight_layout()
+        plt.savefig(map_file, dpi=200)
+        plt.show()
+
+        print("\n--- Smoothed Garden Hotspot Map ---")
+        print("Original hotspot pixels:", np.count_nonzero(hotspot_mask))
+        print("Connected hotspot regions:", cluster_count)
+        print("Map saved:", map_file.name)
+
+
+if __name__ == "__main__":
+    # Existing Garden test. Other wildfires can use this function with their own files.
+    generate_smoothed_hotspot_map(
+        results_dir / "garden_hotspots.tif",
+        results_dir / "garden_slope_30m.tif",
+        results_dir / "garden_hotspot_map_smooth.png",
+        "Garden Wildfire"
     )
-
-    # Get geographic boundaries
-    bounds = src.bounds
-    extent = [bounds.left, bounds.right, bounds.bottom, bounds.top]
-
-   # Distinct terrain colors that contrast with red hotspots
-    terrain_colors = [
-    "#2166AC",  # 0°: Deep blue
-    "#67A9CF",  # Gentle slopes: light blue
-    "#1A9850",  # Moderate slopes: green
-    "#A6D96A",  # Steeper slopes: light green
-    "#FEE08B"   # Very steep slopes: golden yellow
-]
-
-    terrain_cmap = LinearSegmentedColormap.from_list(
-    "terrain_contrast",
-    terrain_colors
-)
-
-    plt.figure(figsize=(10, 8))
-
-    # Display terrain slope using muted earth tones
-    plt.imshow(
-        slope,
-        cmap=terrain_cmap,
-        extent=extent,
-        origin="upper",
-        vmin=0,
-        vmax=65
-    )
-
-    plt.colorbar(label="Slope (degrees)")
-
-    # Draw smoothed hotspot regions in red
-    plt.contourf(
-        smooth_mask,
-        levels=[0.25, 1.0],
-        colors=["red"],
-        alpha=0.65,
-        extent=extent,
-        origin="upper"
-    )
-
-    # Add darker outlines around hotspot regions
-    plt.contour(
-        smooth_mask,
-        levels=[0.25],
-        colors=["darkred"],
-        linewidths=0.8,
-        extent=extent,
-        origin="upper"
-    )
-
-    # Add legend
-    plt.legend(
-        handles=[Patch(color="red", label="Hotspot Region")],
-        loc="upper right"
-    )
-
-    plt.title("Garden Wildfire - Potential Erosion Hotspots")
-    plt.xlabel("UTM Easting (meters)")
-    plt.ylabel("UTM Northing (meters)")
-
-    plt.tight_layout()
-    plt.savefig(map_file, dpi=200)
-    plt.show()
-
-    print("\n--- Smoothed Garden Hotspot Map ---")
-    print("Original hotspot pixels:", np.count_nonzero(hotspot_mask))
-    print("Connected hotspot regions:", cluster_count)
-    print("Map saved:", map_file.name)  
 
 # ==================================================
 # STEP 14: Calculate Hotspot Statistics

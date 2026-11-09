@@ -17,4 +17,4 @@ __pycache__/
 !.env.example
 
 # VS Code local settings
-.vscode/
+.vscode/git status --short --untracked-files=all
