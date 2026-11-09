@@ -1,8 +1,7 @@
 # Post Fire Hazard Hotspot Screening System
 
-**Senior Design Project | Python, GIS, Remote Sensing**
 
-A Python-based geographic information system (GIS) pipeline for screening potential post fire hazard hotspots. The system combines **Monitoring Trends in Burn Severity (MTBS)** burn-severity classifications with **USGS elevation data** to identify locations where high burn severity and steep terrain overlap.
+A Python based geographic information system (GIS) pipeline for screening potential post fire hazard hotspots. The system combines **Monitoring Trends in Burn Severity (MTBS)** burn-severity classifications with **USGS elevation data** to identify locations where high burn severity and steep terrain overlap.
 
 > **Project status:** The reusable GIS analysis pipeline is implemented and has processed six wildfire datasets. Database storage, a graphical user interface (GUI), and full application integration are planned next. 
 
